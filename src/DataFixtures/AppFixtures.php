@@ -1,0 +1,56 @@
+<?php
+
+namespace App\DataFixtures;
+
+use App\Entity\Ad;
+use Faker\Factory;
+use App\Entity\Image;
+use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Common\Persistence\ObjectManager;
+
+class AppFixtures extends Fixture
+{
+    public function load(ObjectManager $manager)
+    {
+        $faker = Factory::create('fr-FR'); // faker en français
+
+        for ($i=0; $i <= 30; $i++) {
+
+            $ad = new Ad();
+            $title = $faker->sentence();
+            // sentence va générer une phrase en lorem
+            $coverImage = $faker->imageUrl(1000, 350);
+            // imageUrl va afficher une image aléatoire lorempixel avec les dimensions choisies
+            $introduction = $faker->paragraph(2);
+            // paragraph va générer un paragraph en lorem
+            $content = '<p>' . join('</p><p>', $faker->paragraphs(5)) . '</p>';
+
+
+            $ad->setTitle($title)
+                ->setCoverImage($coverImage)
+                ->setIntroduction($introduction)
+                ->setContent($content)
+                ->setPrice(mt_rand(20, 400))
+                ->setRooms(mt_rand(2, 5));
+    
+
+            // Pour chaque annonce je crée 2 à 5 images qui lui seront associée
+            for ($j=0; $j < mt_rand(2,5); $j++) { 
+                $image = new Image();
+
+                $image->setUrl($faker->imageUrl())
+                    ->setCaption($faker->sentence())
+                    ->setAd($ad);
+                    
+                    $manager->persist($image);
+            }
+
+            $manager->persist($ad);
+            // persist -> pour faire persister mon annonce ( ad )
+            // persist prévient Doctrine qu'on veut sauver
+        }
+
+        $manager->flush();
+        // flush envoie la requête finale
+    }
+}
