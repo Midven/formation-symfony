@@ -6,6 +6,7 @@ use App\Entity\Ad;
 use App\Form\AdType;
 use App\Entity\Image;
 use App\Repository\AdRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -34,7 +35,7 @@ class AdController extends AbstractController
      * @Route("/ads/new", name="ads_create")
      * @return Response
      */
-    public function create(Request $request){
+    public function create(Request $request, EntityManagerInterface $manager){
         $ad = new Ad();
 
         // en paramètre, la classe du formulaire ( AdType ) et l'annonce ($ad)
@@ -63,12 +64,14 @@ class AdController extends AbstractController
 
 
         if($form->isSubmitted() && $form->isValid()){
-            $manager = $this->getDoctrine()->getManager();
+            // $manager = $this->getDoctrine()->getManager();
 
             foreach($ad->getImages() as $image){
                 $image->setAd($ad);
                 $manager->persist($image);
             }
+
+            $ad->setAuthor($this->getUser());
 
             $manager->persist($ad);
             $manager->flush();
