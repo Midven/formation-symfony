@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Ad;
 use App\Form\AdType;
 use App\Repository\AdRepository;
+use App\Service\PaginationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,12 +15,38 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class AdminAdController extends AbstractController
 {
     /**
-     * @Route("/admin/ads", name="admin_ads_index")
+     * @Route("/admin/ads/{page<\d+>?1}", name="admin_ads_index")
      */
-    public function index(AdRepository $repo)
+    public function index(AdRepository $repo, $page, PaginationService $pagination)
     {
+        // REQUIREMENTS
+        // {page<\d+>} ce qu'il y a entre <> est les requirement, ici je dis via une regex 
+        // que ce qu'il doit y avoir dans page est un nombre, si je veux le rentre optionnel
+        // je mets un "?", exemple : {page<\d+>?}
+        // si je veux rajouter la valeur par défaut je dois la mettre après le "?" {page<\d+>?1}
+
+        #region Explication des différents Finds
+        // Méthode find : permet de retrouver un enregistrement par son identifiant
+        // $ad = $repo->find(382);
+        // dump($ad);
+
+        // $ad = $repo->findOneBy([
+        //     'id' => 383,
+        //     'title' => 'Quae voluptate dicta et ea magni reprehenderit.'
+        // ]);
+        // dump($ad);
+
+        // $ad = $repo->findBy([], [], 5, 0);
+        // dump($ad);
+        #endregion
+
+
+        $pagination->setEntityClass(Ad::class)
+                   ->setPage($page)
+                   ;
+
         return $this->render('admin/ad/index.html.twig', [
-            'ads' => $repo->findAll()
+            'pagination' => $pagination
         ]);
     }
 
